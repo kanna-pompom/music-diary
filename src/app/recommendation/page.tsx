@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { Play, Pause, Volume2, Heart, Plus, ArrowLeft, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
@@ -18,7 +18,7 @@ interface Song {
   releaseYear: number
 }
 
-export default function RecommendationPage() {
+function RecommendationPageContent() {
   const searchParams = useSearchParams()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -388,5 +388,13 @@ export default function RecommendationPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function RecommendationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RecommendationPageContent />
+    </Suspense>
   )
 }

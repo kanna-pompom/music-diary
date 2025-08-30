@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     let accessToken
     try {
       accessToken = await getSpotifyAccessToken()
-    } catch (error) {
+    } catch {
       console.log('Using demo mode for music recommendations')
       
       // デモモードの場合は高度なモック推薦を提供
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateReasonText(analysis: any, track: SpotifyTrack): string {
+function generateReasonText(analysis: { mood: string, emotions?: { intensity: number } }, track: SpotifyTrack): string {
   const mood = analysis.mood
   const artist = track.artists[0]?.name
   const title = track.name
@@ -215,11 +215,11 @@ function generateReasonText(analysis: any, track: SpotifyTrack): string {
   return templates[Math.floor(Math.random() * templates.length)]
 }
 
-function calculateRelevanceScore(analysis: any, track: SpotifyTrack): number {
+function calculateRelevanceScore(analysis: { emotions?: { intensity: number } }, track: SpotifyTrack): number {
   let score = 5
   
-  if (analysis.emotions?.intensity > 7) score += 2
-  if (analysis.emotions?.intensity < 3) score += 1
+  if (analysis.emotions?.intensity && analysis.emotions.intensity > 7) score += 2
+  if (analysis.emotions?.intensity && analysis.emotions.intensity < 3) score += 1
   
   if (track.preview_url) score += 1
   
@@ -227,7 +227,7 @@ function calculateRelevanceScore(analysis: any, track: SpotifyTrack): number {
 }
 
 // 高度なモック推薦関数
-function generateAdvancedMockRecommendation(analysis: any) {
+function generateAdvancedMockRecommendation(analysis: { mood: string, keywords?: string[], emotions?: { intensity: number } }) {
   const mood = analysis.mood
   const keywords = analysis.keywords || []
   
@@ -285,15 +285,15 @@ function generateAdvancedMockRecommendation(analysis: any) {
   // キーワードマッチから楽曲選択
   let selectedSong = null
   for (const keyword of keywords) {
-    if (keywordMusic[keyword]) {
-      selectedSong = { ...keywordMusic[keyword], year: 2023 }
+    if (keywordMusic[keyword as keyof typeof keywordMusic]) {
+      selectedSong = { ...keywordMusic[keyword as keyof typeof keywordMusic], year: 2023 }
       break
     }
   }
 
   // キーワードマッチしない場合は感情ベース
   if (!selectedSong) {
-    const songs = musicDatabase[mood] || musicDatabase.calm
+    const songs = musicDatabase[mood as keyof typeof musicDatabase] || musicDatabase.calm
     selectedSong = songs[Math.floor(Math.random() * songs.length)]
   }
 
@@ -314,7 +314,7 @@ function generateAdvancedMockRecommendation(analysis: any) {
     artist: selectedSong.artist,
     album: `${selectedSong.title} - Single`,
     genre: selectedSong.genre,
-    albumCover: `https://via.placeholder.com/300x300/${coverColors[mood] || '98FB98'}/FFFFFF?text=${encodeURIComponent(selectedSong.title)}`,
+    albumCover: `https://via.placeholder.com/300x300/${coverColors[mood as keyof typeof coverColors] || '98FB98'}/FFFFFF?text=${encodeURIComponent(selectedSong.title)}`,
     duration: Math.floor(Math.random() * 60) + 180, // 3-4分
     previewUrl: null, // デモモードではプレビューなし
     spotifyUrl: `https://open.spotify.com/search/${encodeURIComponent(selectedSong.title)}`,
@@ -331,7 +331,7 @@ function generateAdvancedMockRecommendation(analysis: any) {
   return NextResponse.json({ recommendation })
 }
 
-function generateAdvancedReason(analysis: any, song: any): string {
+function generateAdvancedReason(analysis: { mood: string, keywords?: string[], emotions?: { intensity: number } }, song: { title: string, artist: string, genre: string }): string {
   const mood = analysis.mood
   const keywords = analysis.keywords || []
   const intensity = analysis.emotions?.intensity || 5
@@ -367,7 +367,7 @@ function generateAdvancedReason(analysis: any, song: any): string {
     ]
   }
 
-  const templates = reasonTemplates[mood] || reasonTemplates.calm
+  const templates = reasonTemplates[mood as keyof typeof reasonTemplates] || reasonTemplates.calm
   let reason = templates[Math.floor(Math.random() * templates.length)]
 
   // キーワードがある場合は追加コメント

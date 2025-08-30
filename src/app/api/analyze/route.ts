@@ -147,7 +147,7 @@ function generateAdvancedMockAnalysis(content: string) {
 }
 
 function extractKeywords(text: string): string[] {
-  const keywords = []
+  const keywords: string[] = []
   
   // 活動キーワード
   const activityKeywords = {
@@ -196,5 +196,5 @@ function generateContextMessage(emotion: string, keywords: string[]): string {
   }
 
   const keywordContext = keywords.length > 0 ? `${keywords.join('、')}について書かれた` : ''
-  return `${keywordContext}今日の${contexts[emotion] || contexts.calm}`
+  return `${keywordContext}今日の${contexts[emotion as keyof typeof contexts] || contexts.calm}`
 }

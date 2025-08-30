@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Key, CheckCircle, ExternalLink, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Key, CheckCircle } from 'lucide-react'
 
 export default function GuidePage() {
   return (
