@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Camera, Image as ImageIcon, Save, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '../../../lib/auth-context'
+import { DatabaseService } from '../../../lib/db-service'
 
 export default function NewDiaryPage() {
+  const { user, signInAnonymously } = useAuth()
   const [diaryData, setDiaryData] = useState({
     title: '',
     content: '',
@@ -43,12 +46,30 @@ export default function NewDiaryPage() {
     e.preventDefault()
     if (!diaryData.content.trim()) return
 
+    // 匿名認証がされていない場合は自動でサインイン
+    if (!user) {
+      await signInAnonymously()
+    }
+
     setIsLoading(true)
     
     try {
       console.log('日記を分析中...')
       
-      // まずは通常のAPI分析を試行
+      // 写真のアップロード処理
+      let photoUrls: string[] = []
+      if (diaryData.photos.length > 0 && user) {
+        try {
+          const uploadPromises = diaryData.photos.map(photo => 
+            DatabaseService.uploadPhoto(photo, user.uid)
+          )
+          photoUrls = await Promise.all(uploadPromises)
+        } catch (error) {
+          console.warn('写真のアップロードに失敗:', error)
+        }
+      }
+      
+      // API分析を実行
       const analysisResponse = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -56,7 +77,7 @@ export default function NewDiaryPage() {
         },
         body: JSON.stringify({
           content: diaryData.content,
-          photos: diaryData.photos.length > 0 ? ['photo_data'] : []
+          photos: photoUrls.length > 0 ? photoUrls : []
         }),
       })
 
@@ -66,6 +87,23 @@ export default function NewDiaryPage() {
 
       const analysisResult = await analysisResponse.json()
       console.log('分析結果:', analysisResult)
+
+      // 日記をFirebaseに保存
+      let diaryEntryId = ''
+      if (user) {
+        try {
+          diaryEntryId = await DatabaseService.createDiaryEntry({
+            userId: user.uid,
+            date: new Date().toISOString().split('T')[0],
+            title: diaryData.title || undefined,
+            content: diaryData.content,
+            photos: photoUrls,
+            analysis: analysisResult
+          })
+        } catch (error) {
+          console.warn('日記の保存に失敗:', error)
+        }
+      }
 
       console.log('音楽を検索中...')
       
@@ -90,6 +128,22 @@ export default function NewDiaryPage() {
       console.log('推薦結果:', recommendResult)
 
       if (recommendResult.recommendation) {
+        // 音楽推薦をFirebaseに保存
+        if (user && diaryEntryId) {
+          try {
+            await DatabaseService.createSongRecommendation({
+              userId: user.uid,
+              diaryEntryId: diaryEntryId,
+              date: new Date().toISOString().split('T')[0],
+              song: recommendResult.recommendation.song,
+              reason: recommendResult.recommendation.reason,
+              relevanceScore: recommendResult.recommendation.relevanceScore || 8
+            })
+          } catch (error) {
+            console.warn('音楽推薦の保存に失敗:', error)
+          }
+        }
+
         const params = new URLSearchParams({
           song: JSON.stringify(recommendResult.recommendation.song),
           reason: recommendResult.recommendation.reason,

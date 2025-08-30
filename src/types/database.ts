@@ -61,6 +61,7 @@ export interface SongRecommendation {
     previewUrl?: string
     albumCover: string
     duration: number // seconds
+    spotifyUrl: string
   }
   
   reason: string // AI生成の提案理由（自然な語りかけ形式）
