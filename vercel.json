@@ -1,0 +1,24 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "env": {
+    "OPENAI_API_KEY": "@openai-api-key",
+    "SPOTIFY_CLIENT_ID": "@spotify-client-id",
+    "SPOTIFY_CLIENT_SECRET": "@spotify-client-secret"
+  },
+  "build": {
+    "env": {
+      "OPENAI_API_KEY": "@openai-api-key",
+      "SPOTIFY_CLIENT_ID": "@spotify-client-id", 
+      "SPOTIFY_CLIENT_SECRET": "@spotify-client-secret"
+    }
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
