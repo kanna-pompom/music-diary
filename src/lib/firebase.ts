@@ -2,6 +2,10 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
+import type { FirebaseApp } from 'firebase/app'
+import type { Firestore } from 'firebase/firestore'
+import type { Auth } from 'firebase/auth'
+import type { FirebaseStorage } from 'firebase/storage'
 
 // Firebase設定が不完全な場合のデフォルト値
 const firebaseConfig = {
@@ -13,17 +17,25 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:demo-app-id",
 }
 
+// Firebaseの無効化フラグ（デモモード）
+const isFirebaseDisabled = process.env.NEXT_PUBLIC_DISABLE_FIREBASE === 'true' || 
+                           process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'your_api_key_here'
+
 // Firebase初期化時のエラーハンドリング
-let app: any = null
-let db: any = null
-let auth: any = null
-let storage: any = null
+let app: FirebaseApp | null = null
+let db: Firestore | null = null
+let auth: Auth | null = null
+let storage: FirebaseStorage | null = null
 
 try {
-  app = initializeApp(firebaseConfig)
-  db = getFirestore(app)
-  auth = getAuth(app)
-  storage = getStorage(app)
+  if (!isFirebaseDisabled) {
+    app = initializeApp(firebaseConfig)
+    db = getFirestore(app)
+    auth = getAuth(app)
+    storage = getStorage(app)
+  } else {
+    console.warn('Firebase is disabled (demo mode)')
+  }
 } catch (error) {
   console.warn('Firebase initialization failed:', error)
   // Firebase機能を無効化

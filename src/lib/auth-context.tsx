@@ -18,6 +18,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
       setLoading(false)
@@ -27,6 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const handleSignInAnonymously = async () => {
+    if (!auth) {
+      console.error('Firebase Auth not initialized')
+      return
+    }
     try {
       await signInAnonymously(auth)
     } catch (error) {
@@ -35,6 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const handleSignOut = async () => {
+    if (!auth) {
+      console.error('Firebase Auth not initialized')
+      return
+    }
     try {
       await signOut(auth)
     } catch (error) {

@@ -28,6 +28,11 @@ import {
 export class DatabaseService {
   // ユーザープロファイル管理
   static async getUserProfile(userId: string): Promise<UserProfile | null> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return null
+    }
+    
     try {
       const docRef = doc(db, 'users', userId)
       const docSnap = await getDoc(docRef)
@@ -48,6 +53,11 @@ export class DatabaseService {
   }
 
   static async createUserProfile(profile: Omit<UserProfile, 'createdAt'>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'users', profile.id)
       await setDoc(docRef, {
@@ -61,6 +71,11 @@ export class DatabaseService {
   }
 
   static async updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'users', userId)
       await updateDoc(docRef, updates)
@@ -72,6 +87,11 @@ export class DatabaseService {
 
   // 日記エントリー管理
   static async getDiaryEntries(userId: string, limitCount = 50): Promise<DiaryEntry[]> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return []
+    }
+    
     try {
       const q = query(
         collection(db, 'diaryEntries'),
@@ -94,6 +114,11 @@ export class DatabaseService {
   }
 
   static async getDiaryEntry(entryId: string): Promise<DiaryEntry | null> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return null
+    }
+    
     try {
       const docRef = doc(db, 'diaryEntries', entryId)
       const docSnap = await getDoc(docRef)
@@ -116,6 +141,11 @@ export class DatabaseService {
   }
 
   static async createDiaryEntry(entry: Omit<DiaryEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return ''
+    }
+    
     try {
       const docRef = await addDoc(collection(db, 'diaryEntries'), {
         ...entry,
@@ -130,6 +160,11 @@ export class DatabaseService {
   }
 
   static async updateDiaryEntry(entryId: string, updates: Partial<DiaryEntry>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'diaryEntries', entryId)
       await updateDoc(docRef, {
@@ -143,6 +178,11 @@ export class DatabaseService {
   }
 
   static async deleteDiaryEntry(entryId: string): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       await deleteDoc(doc(db, 'diaryEntries', entryId))
     } catch (error) {
@@ -153,6 +193,11 @@ export class DatabaseService {
 
   // 音楽推薦管理
   static async getSongRecommendations(userId: string, limitCount = 50): Promise<SongRecommendation[]> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return []
+    }
+    
     try {
       const q = query(
         collection(db, 'songRecommendations'),
@@ -174,6 +219,11 @@ export class DatabaseService {
   }
 
   static async createSongRecommendation(recommendation: Omit<SongRecommendation, 'id' | 'createdAt'>): Promise<string> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return ''
+    }
+    
     try {
       const docRef = await addDoc(collection(db, 'songRecommendations'), {
         ...recommendation,
@@ -187,6 +237,11 @@ export class DatabaseService {
   }
 
   static async updateSongRecommendation(recommendationId: string, updates: Partial<SongRecommendation>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'songRecommendations', recommendationId)
       await updateDoc(docRef, updates)
@@ -198,6 +253,11 @@ export class DatabaseService {
 
   // プレイリスト管理
   static async getPlaylists(userId: string): Promise<Playlist[]> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return []
+    }
+    
     try {
       const q = query(
         collection(db, 'playlists'),
@@ -219,6 +279,11 @@ export class DatabaseService {
   }
 
   static async createPlaylist(playlist: Omit<Playlist, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return ''
+    }
+    
     try {
       const docRef = await addDoc(collection(db, 'playlists'), {
         ...playlist,
@@ -233,6 +298,11 @@ export class DatabaseService {
   }
 
   static async updatePlaylist(playlistId: string, updates: Partial<Playlist>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'playlists', playlistId)
       await updateDoc(docRef, {
@@ -246,6 +316,11 @@ export class DatabaseService {
   }
 
   static async deletePlaylist(playlistId: string): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       await deleteDoc(doc(db, 'playlists', playlistId))
     } catch (error) {
@@ -256,6 +331,11 @@ export class DatabaseService {
 
   // 写真アップロード
   static async uploadPhoto(file: File, userId: string): Promise<string> {
+    if (!db || !storage) {
+      console.error('Firebase not initialized')
+      return ''
+    }
+    
     try {
       const filename = `${Date.now()}-${file.name}`
       const storageRef = ref(storage, `users/${userId}/photos/${filename}`)
@@ -272,6 +352,11 @@ export class DatabaseService {
 
   // 統計データ取得
   static async getUserStats(userId: string): Promise<UserStats | null> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return null
+    }
+    
     try {
       const docRef = doc(db, 'userStats', userId)
       const docSnap = await getDoc(docRef)
@@ -292,6 +377,11 @@ export class DatabaseService {
   }
 
   static async updateUserStats(userId: string, updates: Partial<UserStats>): Promise<void> {
+    if (!db) {
+      console.error('Firestore not initialized')
+      return
+    }
+    
     try {
       const docRef = doc(db, 'userStats', userId)
       await updateDoc(docRef, {
