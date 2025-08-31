@@ -32,24 +32,87 @@ export default function PlaylistsPage() {
   const [newPlaylistDescription, setNewPlaylistDescription] = useState('')
 
   useEffect(() => {
-    if (user) {
-      loadData()
-    } else {
-      setLoading(false)
-    }
+    loadData()
   }, [user])
 
   const loadData = async () => {
-    if (!user) return
-
     try {
-      const [playlistsData, songsData] = await Promise.all([
-        DatabaseService.getPlaylists(user.uid),
-        DatabaseService.getSongRecommendations(user.uid, 100)
-      ])
+      if (user) {
+        // 認証済みユーザーのデータを読み込み
+        const [playlistsData, songsData] = await Promise.all([
+          DatabaseService.getPlaylists(user.uid),
+          DatabaseService.getSongRecommendations(user.uid, 100)
+        ])
 
-      setPlaylists(playlistsData)
-      setSongs(songsData)
+        setPlaylists(playlistsData)
+        setSongs(songsData)
+      } else {
+        // デモ環境用のモックデータ
+        const mockSongs = [
+          {
+            id: 'mock1',
+            userId: 'demo',
+            diaryEntryId: 'mock-diary-1',
+            date: '2024-01-15',
+            song: {
+              spotifyId: 'mock1',
+              title: 'Shape of You',
+              artist: 'Ed Sheeran',
+              album: '÷ (Divide)',
+              genre: 'Pop',
+              releaseYear: 2017,
+              albumCover: 'https://via.placeholder.com/300x300?text=Shape+of+You',
+              duration: 234,
+              spotifyUrl: '#'
+            },
+            reason: 'あなたの今日の気分にぴったりの楽しいポップソング',
+            relevanceScore: 9,
+            createdAt: new Date('2024-01-15')
+          },
+          {
+            id: 'mock2', 
+            userId: 'demo',
+            diaryEntryId: 'mock-diary-2',
+            date: '2024-01-14',
+            song: {
+              spotifyId: 'mock2',
+              title: 'Bohemian Rhapsody',
+              artist: 'Queen',
+              album: 'A Night at the Opera',
+              genre: 'Rock',
+              releaseYear: 1975,
+              albumCover: 'https://via.placeholder.com/300x300?text=Queen',
+              duration: 355,
+              spotifyUrl: '#'
+            },
+            reason: '壮大で感動的な楽曲をお探しのあなたに',
+            relevanceScore: 8,
+            createdAt: new Date('2024-01-14')
+          },
+          {
+            id: 'mock3',
+            userId: 'demo',
+            diaryEntryId: 'mock-diary-3', 
+            date: '2024-01-13',
+            song: {
+              spotifyId: 'mock3',
+              title: 'Clair de Lune',
+              artist: 'Claude Debussy',
+              album: 'Suite Bergamasque',
+              genre: 'Classical',
+              releaseYear: 1905,
+              albumCover: 'https://via.placeholder.com/300x300?text=Debussy',
+              duration: 300,
+              spotifyUrl: '#'
+            },
+            reason: '静かで美しい夜にふさわしいクラシック',
+            relevanceScore: 7,
+            createdAt: new Date('2024-01-13')
+          }
+        ]
+        setSongs(mockSongs)
+        setPlaylists([])
+      }
     } catch (error) {
       console.error('データの読み込みに失敗:', error)
     } finally {
@@ -117,7 +180,8 @@ export default function PlaylistsPage() {
     return emotionGroups
   }
 
-  if (!user) {
+  // データが空の場合のみ初回利用案内を表示
+  if (!loading && songs.length === 0 && playlists.length === 0 && !user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
         <motion.div

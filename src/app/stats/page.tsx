@@ -42,26 +42,30 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
-      calculateStats()
-    } else {
-      setLoading(false)
-    }
+    calculateStats()
   }, [user])
 
   const calculateStats = async () => {
-    if (!user) return
-
     try {
-      const [diaryEntries, songRecommendations] = await Promise.all([
-        DatabaseService.getDiaryEntries(user.uid, 500),
-        DatabaseService.getSongRecommendations(user.uid, 500)
-      ])
+      if (!user) {
+        // デモモード用のモックデータ
+        const mockStats = generateMockStats()
+        setStats(mockStats)
+      } else {
+        // 認証済みユーザー用の実データ
+        const [diaryEntries, songRecommendations] = await Promise.all([
+          DatabaseService.getDiaryEntries(user.uid, 500),
+          DatabaseService.getSongRecommendations(user.uid, 500)
+        ])
 
-      const stats = await generateStatsData(diaryEntries, songRecommendations)
-      setStats(stats)
+        const stats = await generateStatsData(diaryEntries, songRecommendations)
+        setStats(stats)
+      }
     } catch (error) {
       console.error('統計データの計算に失敗:', error)
+      // エラー時もデモデータを表示
+      const mockStats = generateMockStats()
+      setStats(mockStats)
     } finally {
       setLoading(false)
     }
@@ -198,6 +202,44 @@ export default function StatsPage() {
     return { maxStreak, currentStreak }
   }
 
+  const generateMockStats = (): StatsData => {
+    return {
+      totalDiaryEntries: 73,
+      totalSongsRecommended: 68,
+      streakDays: 18,
+      currentStreak: 7,
+      genresDiscovered: 12,
+      favoriteGenres: [
+        { genre: 'Pop', count: 16 },
+        { genre: 'Rock', count: 14 },
+        { genre: 'Jazz', count: 12 },
+        { genre: 'Classical', count: 9 },
+        { genre: 'Electronic', count: 8 },
+        { genre: 'Folk', count: 5 },
+        { genre: 'R&B', count: 4 }
+      ],
+      emotionalBreakdown: [
+        { emotion: 'happy', count: 22, percentage: 30 },
+        { emotion: 'calm', count: 18, percentage: 25 },
+        { emotion: 'excited', count: 12, percentage: 16 },
+        { emotion: 'nostalgic', count: 10, percentage: 14 },
+        { emotion: 'energetic', count: 7, percentage: 10 },
+        { emotion: 'melancholic', count: 4, percentage: 5 }
+      ],
+      monthlyActivity: [
+        { month: '2024-03', entries: 5 },
+        { month: '2024-04', entries: 8 },
+        { month: '2024-05', entries: 12 },
+        { month: '2024-06', entries: 16 },
+        { month: '2024-07', entries: 19 },
+        { month: '2024-08', entries: 13 }
+      ],
+      averageIntensity: 6.8,
+      mostActiveDay: '土曜日',
+      totalListeningTime: 4 // 時間単位
+    }
+  }
+
   const handleSignIn = async () => {
     try {
       await signInAnonymously()
@@ -238,37 +280,6 @@ export default function StatsPage() {
     return iconMap[stat] || TrendingUp
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md"
-        >
-          <TrendingUp className="w-16 h-16 text-purple-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">統計データ</h2>
-          <p className="text-gray-600 mb-6">
-            あなたの音楽日記の統計を確認してみましょう。
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleSignIn}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-            >
-              音楽の好みを設定する
-            </button>
-            <Link 
-              href="/"
-              className="px-6 py-3 text-purple-600 hover:text-purple-800 transition-colors"
-            >
-              ホームに戻る
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    )
-  }
 
   if (loading) {
     return (
@@ -281,7 +292,7 @@ export default function StatsPage() {
     )
   }
 
-  if (!stats) {
+  if (!stats || (stats.totalDiaryEntries === 0 && user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md">
@@ -318,10 +329,15 @@ export default function StatsPage() {
             ホームに戻る
           </Link>
           
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-            <TrendingUp className="w-6 h-6 mr-2" />
-            統計
-          </h1>
+          <div className="text-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 mr-2" />
+              統計
+            </h1>
+            {!user && (
+              <p className="text-sm text-purple-600 mt-1">デモデータを表示中</p>
+            )}
+          </div>
           
           <div className="w-16 sm:w-24" />
         </motion.header>
@@ -626,6 +642,35 @@ export default function StatsPage() {
                 <div className="text-lg font-bold">継続者バッジ</div>
                 <div className="text-sm opacity-90">10回以上の日記記録</div>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Demo Mode Banner */}
+        {!user && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 shadow-xl text-white text-center"
+          >
+            <h3 className="text-lg font-bold mb-2">あなただけの音楽統計を始めませんか？</h3>
+            <p className="text-purple-100 mb-4">
+              日記を書いて、あなたの感情に合った音楽を発見し、個人的な統計データを蓄積できます。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={handleSignIn}
+                className="px-6 py-3 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition-all font-medium"
+              >
+                音楽の好みを設定する
+              </button>
+              <Link 
+                href="/"
+                className="px-6 py-3 text-white border border-purple-300 rounded-lg hover:bg-purple-400 transition-all"
+              >
+                ホームに戻る
+              </Link>
             </div>
           </motion.div>
         )}

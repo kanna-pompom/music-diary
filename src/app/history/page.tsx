@@ -38,29 +38,105 @@ export default function HistoryPage() {
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user) {
-      loadHistoryData()
-    } else {
-      setLoading(false)
-    }
+    loadHistoryData()
   }, [user])
 
   const loadHistoryData = async () => {
-    if (!user) return
-
     try {
-      const [diaryEntries, songRecommendations] = await Promise.all([
-        DatabaseService.getDiaryEntries(user.uid, 100),
-        DatabaseService.getSongRecommendations(user.uid, 100)
-      ])
+      if (user) {
+        // 認証済みユーザーのデータを読み込み
+        const [diaryEntries, songRecommendations] = await Promise.all([
+          DatabaseService.getDiaryEntries(user.uid, 100),
+          DatabaseService.getSongRecommendations(user.uid, 100)
+        ])
 
-      // 日記と音楽推薦をマッチング
-      const entriesWithRecommendations: DiaryWithRecommendation[] = diaryEntries.map(diary => {
-        const recommendation = songRecommendations.find(rec => rec.diaryEntryId === diary.id)
-        return { diary, recommendation }
-      })
+        // 日記と音楽推薦をマッチング
+        const entriesWithRecommendations: DiaryWithRecommendation[] = diaryEntries.map(diary => {
+          const recommendation = songRecommendations.find(rec => rec.diaryEntryId === diary.id)
+          return { diary, recommendation }
+        })
 
-      setEntries(entriesWithRecommendations)
+        setEntries(entriesWithRecommendations)
+      } else {
+        // デモ環境用のモックデータ
+        const mockEntries = [
+          {
+            diary: {
+              id: 'mock-diary-1',
+              userId: 'demo',
+              date: '2024-01-15',
+              title: '楽しい一日',
+              content: '友達と遊園地に行って、とても楽しい時間を過ごしました。ジェットコースターに乗ったり、美味しい食べ物を食べたり、笑い声が絶えない素敵な一日でした。',
+              photos: [],
+              createdAt: new Date('2024-01-15'),
+              updatedAt: new Date('2024-01-15'),
+              analysis: {
+                emotions: { primary: '喜び', intensity: 8 },
+                keywords: ['楽しい', '友達', '遊園地'],
+                mood: 'happy' as const
+              }
+            },
+            recommendation: {
+              id: 'mock-rec-1',
+              userId: 'demo',
+              diaryEntryId: 'mock-diary-1',
+              date: '2024-01-15',
+              song: {
+                spotifyId: 'mock1',
+                title: 'Happy',
+                artist: 'Pharrell Williams',
+                album: 'Girl',
+                genre: 'Pop',
+                releaseYear: 2013,
+                albumCover: 'https://via.placeholder.com/300x300?text=Happy',
+                duration: 233,
+                spotifyUrl: '#'
+              },
+              reason: '楽しい気分にぴったりのアップテンポな楽曲です',
+              relevanceScore: 9,
+              createdAt: new Date('2024-01-15')
+            }
+          },
+          {
+            diary: {
+              id: 'mock-diary-2',
+              userId: 'demo',
+              date: '2024-01-14',
+              title: '静かな夜',
+              content: '今日は一人で静かに過ごしました。本を読んだり、コーヒーを飲んだり、ゆっくりとした時間の中で自分自身と向き合うことができました。',
+              photos: [],
+              createdAt: new Date('2024-01-14'),
+              updatedAt: new Date('2024-01-14'),
+              analysis: {
+                emotions: { primary: '平穏', intensity: 6 },
+                keywords: ['静か', 'コーヒー', '読書'],
+                mood: 'calm' as const
+              }
+            },
+            recommendation: {
+              id: 'mock-rec-2',
+              userId: 'demo',
+              diaryEntryId: 'mock-diary-2',
+              date: '2024-01-14',
+              song: {
+                spotifyId: 'mock2',
+                title: 'Clair de Lune',
+                artist: 'Claude Debussy',
+                album: 'Suite Bergamasque',
+                genre: 'Classical',
+                releaseYear: 1905,
+                albumCover: 'https://via.placeholder.com/300x300?text=Debussy',
+                duration: 300,
+                spotifyUrl: '#'
+              },
+              reason: '静寂で美しい夜にふさわしいクラシックの名曲',
+              relevanceScore: 8,
+              createdAt: new Date('2024-01-14')
+            }
+          }
+        ]
+        setEntries(mockEntries)
+      }
     } catch (error) {
       console.error('履歴データの読み込みに失敗:', error)
     } finally {
