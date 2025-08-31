@@ -16,6 +16,7 @@ import {
   Zap
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/auth-context'
 import { DatabaseService } from '../../lib/db-service'
 import { DiaryEntry, SongRecommendation } from '../../types/database'
@@ -35,6 +36,7 @@ interface StatsData {
 }
 
 export default function StatsPage() {
+  const router = useRouter()
   const { user, signInAnonymously } = useAuth()
   const [stats, setStats] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -197,7 +199,12 @@ export default function StatsPage() {
   }
 
   const handleSignIn = async () => {
-    await signInAnonymously()
+    try {
+      await signInAnonymously()
+      router.push('/diary/new')
+    } catch (error) {
+      console.error('サインインに失敗しました:', error)
+    }
   }
 
   const formatTime = (minutes: number) => {

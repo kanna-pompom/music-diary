@@ -15,11 +15,13 @@ import {
   ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/auth-context'
 import { DatabaseService } from '../../lib/db-service'
 import { Playlist, SongRecommendation } from '../../types/database'
 
 export default function PlaylistsPage() {
+  const router = useRouter()
   const { user, signInAnonymously } = useAuth()
   const [playlists, setPlaylists] = useState<Playlist[]>([])
   const [songs, setSongs] = useState<SongRecommendation[]>([])
@@ -56,7 +58,12 @@ export default function PlaylistsPage() {
   }
 
   const handleSignIn = async () => {
-    await signInAnonymously()
+    try {
+      await signInAnonymously()
+      router.push('/diary/new')
+    } catch (error) {
+      console.error('サインインに失敗しました:', error)
+    }
   }
 
   const createPlaylist = async () => {

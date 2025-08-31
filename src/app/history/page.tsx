@@ -17,6 +17,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../lib/auth-context'
 import { DatabaseService } from '../../lib/db-service'
 import { DiaryEntry, SongRecommendation } from '../../types/database'
@@ -27,6 +28,7 @@ interface DiaryWithRecommendation {
 }
 
 export default function HistoryPage() {
+  const router = useRouter()
   const { user, signInAnonymously } = useAuth()
   const [entries, setEntries] = useState<DiaryWithRecommendation[]>([])
   const [loading, setLoading] = useState(true)
@@ -67,7 +69,12 @@ export default function HistoryPage() {
   }
 
   const handleSignIn = async () => {
-    await signInAnonymously()
+    try {
+      await signInAnonymously()
+      router.push('/diary/new')
+    } catch (error) {
+      console.error('サインインに失敗しました:', error)
+    }
   }
 
   const filteredEntries = entries.filter(({ diary, recommendation }) => {
