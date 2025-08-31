@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Music, Heart, X, Plus, ArrowRight, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const GENRES = [
   'J-Pop', 'ロック', 'ジャズ', 'クラシック', 'R&B', 'ヒップホップ',
@@ -13,6 +14,7 @@ const GENRES = [
 const ERAS = ['60年代', '70年代', '80年代', '90年代', '2000年代', '2010年代', '2020年代']
 
 export default function SetupPage() {
+  const router = useRouter()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     favoriteArtists: [''],
@@ -66,6 +68,8 @@ export default function SetupPage() {
   const handleSubmit = () => {
     console.log('Setup completed:', formData)
     // TODO: Save to Firebase
+    // セットアップ完了後、日記作成ページにリダイレクト
+    router.push('/diary/new')
   }
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 5))

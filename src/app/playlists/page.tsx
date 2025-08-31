@@ -60,7 +60,7 @@ export default function PlaylistsPage() {
   const handleSignIn = async () => {
     try {
       await signInAnonymously()
-      router.push('/diary/new')
+      router.push('/setup')
     } catch (error) {
       console.error('サインインに失敗しました:', error)
     }
@@ -135,7 +135,7 @@ export default function PlaylistsPage() {
               onClick={handleSignIn}
               className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
             >
-              はじめる
+              音楽の好みを設定する
             </button>
             <Link 
               href="/"
