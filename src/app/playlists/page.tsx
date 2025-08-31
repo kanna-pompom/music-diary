@@ -180,38 +180,6 @@ export default function PlaylistsPage() {
     return emotionGroups
   }
 
-  // データが空の場合のみ初回利用案内を表示
-  if (!loading && songs.length === 0 && playlists.length === 0 && !user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md"
-        >
-          <Music className="w-16 h-16 text-purple-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">プレイリスト機能</h2>
-          <p className="text-gray-600 mb-6">
-            プレイリストを利用するには、まず日記を作成してください。
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleSignIn}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-            >
-              音楽の好みを設定する
-            </button>
-            <Link 
-              href="/"
-              className="px-6 py-3 text-purple-600 hover:text-purple-800 transition-colors"
-            >
-              ホームに戻る
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    )
-  }
 
   if (loading) {
     return (

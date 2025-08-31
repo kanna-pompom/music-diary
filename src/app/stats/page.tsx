@@ -292,7 +292,7 @@ export default function StatsPage() {
     )
   }
 
-  if (!stats || (stats.totalDiaryEntries === 0 && user)) {
+  if (user && stats && stats.totalDiaryEntries === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md">
@@ -343,6 +343,8 @@ export default function StatsPage() {
         </motion.header>
 
         {/* Key Metrics */}
+        {stats && (
+        <>
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -673,6 +675,8 @@ export default function StatsPage() {
               </Link>
             </div>
           </motion.div>
+        )}
+        </>
         )}
       </div>
     </div>
